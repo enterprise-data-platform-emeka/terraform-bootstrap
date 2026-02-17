@@ -1,0 +1,19 @@
+# Terraform internal folder
+.terraform/
+
+# State files
+*.tfstate
+*.tfstate.*
+
+# Crash logs
+crash.log
+
+# Lock file (we will commit this later in other repos, not here)
+.terraform.lock.hcl
+
+# IDE
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store

@@ -577,7 +577,7 @@ SSO session name:
 platform-session
 
 SSO start URL:
-[https://d-906619e6cc.awsapps.com/start](https://d-906619e6cc.awsapps.com/start)
+[https://d-xxxxxxxxxx.awsapps.com/start](https://d-xxxxxxxxxx.awsapps.com/start)
 
 SSO region:
 us-east-1
@@ -773,43 +773,12 @@ You now have:
 
 This completes enterprise-grade AWS login configuration for Terraform bootstrap.
 
+---
 
 
 
 
-
-
-terraform-bootstrap/
-│
-├── .gitignore
-├── README.md
-├── versions.tf
-│
-├── modules/
-│   └── state-backend/
-│       ├── main.tf
-│       ├── variables.tf
-│       └── outputs.tf
-│
-└── environments/
-    ├── dev/
-    │   ├── main.tf
-    │   ├── variables.tf
-    │   └── backend.tf
-    │
-    ├── staging/
-    │   ├── main.tf
-    │   ├── variables.tf
-    │   └── backend.tf
-    │
-    └── prod/
-        ├── main.tf
-        ├── variables.tf
-        └── backend.tf
-
-
-
-
+```
 I run terraform apply inside environments/dev
         ↓
 Terraform reads all .tf files in dev/
@@ -825,3 +794,4 @@ Finds aws_s3_bucket + aws_dynamodb_table
 Creates those resources in AWS
         ↓
 Stores state (local or remote depending on backend.tf)
+```

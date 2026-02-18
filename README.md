@@ -111,7 +111,7 @@ Purpose:
 
 Content:
 
-///
+```
 terraform {
 required_version = ">= 1.6.0"
 
@@ -122,7 +122,7 @@ version = "~> 5.0"
 }
 }
 }
-///
+```
 
 Explanation:
 
@@ -140,7 +140,7 @@ Prevent sensitive or generated files from being committed.
 
 Content:
 
-///
+```
 .terraform/
 *.tfstate
 *.tfstate.*
@@ -149,7 +149,7 @@ crash.log
 .vscode/
 Thumbs.db
 .DS_Store
-///
+```
 
 Never commit state files.
 
@@ -170,7 +170,7 @@ Modules are reusable Terraform components.
 
 ## 5.1 modules/state-backend/variables.tf
 
-///
+```
 variable "bucket_name" {
 description = "S3 bucket name for Terraform state"
 type        = string
@@ -185,7 +185,7 @@ variable "environment" {
 description = "Environment identifier"
 type        = string
 }
-///
+```
 
 These variables make the module reusable for all environments.
 
@@ -195,7 +195,7 @@ These variables make the module reusable for all environments.
 
 ### S3 Bucket
 
-///
+```
 resource "aws_s3_bucket" "state" {
 bucket = var.bucket_name
 
@@ -209,7 +209,7 @@ lifecycle {
 prevent_destroy = true
 }
 }
-///
+```
 
 Explanation:
 
@@ -222,7 +222,7 @@ Explanation:
 
 ### Versioning
 
-///
+```
 resource "aws_s3_bucket_versioning" "versioning" {
 bucket = aws_s3_bucket.state.id
 
@@ -230,7 +230,7 @@ versioning_configuration {
 status = "Enabled"
 }
 }
-///
+```
 
 Versioning protects historical state versions.
 
@@ -238,7 +238,7 @@ Versioning protects historical state versions.
 
 ### Encryption
 
-///
+```
 resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
 bucket = aws_s3_bucket.state.id
 
@@ -248,7 +248,7 @@ sse_algorithm = "AES256"
 }
 }
 }
-///
+```
 
 Ensures state is encrypted at rest.
 
@@ -256,7 +256,7 @@ Ensures state is encrypted at rest.
 
 ### DynamoDB Lock Table
 
-///
+```
 resource "aws_dynamodb_table" "locks" {
 name         = var.dynamodb_table_name
 billing_mode = "PAY_PER_REQUEST"
@@ -276,7 +276,7 @@ lifecycle {
 prevent_destroy = true
 }
 }
-///
+```
 
 This table prevents concurrent terraform apply operations.
 
@@ -284,7 +284,7 @@ This table prevents concurrent terraform apply operations.
 
 ## 5.3 modules/state-backend/outputs.tf
 
-///
+```
 output "state_bucket_name" {
 value = aws_s3_bucket.state.id
 }
@@ -292,7 +292,7 @@ value = aws_s3_bucket.state.id
 output "lock_table_name" {
 value = aws_dynamodb_table.locks.name
 }
-///
+```
 
 Outputs expose resource values after deployment.
 
@@ -310,7 +310,7 @@ Terraform executes only from the current directory.
 
 ## environments/dev/variables.tf
 
-///
+```
 variable "aws_region" {
 type    = string
 default = "eu-central-1"
@@ -320,7 +320,7 @@ variable "aws_profile" {
 type    = string
 default = "dev-admin"
 }
-///
+```
 
 These variables define:
 
@@ -331,7 +331,7 @@ These variables define:
 
 ## environments/dev/main.tf
 
-///
+```
 provider "aws" {
 region  = var.aws_region
 profile = var.aws_profile
@@ -344,7 +344,7 @@ bucket_name         = "enterprise-data-platform-tfstate-dev"
 dynamodb_table_name = "enterprise-data-platform-tf-lock-dev"
 environment         = "dev"
 }
-///
+```
 
 Explanation:
 
@@ -357,7 +357,7 @@ Explanation:
 
 Initially comment this entire file:
 
-///
+```
 
 # terraform {
 
@@ -379,7 +379,7 @@ Initially comment this entire file:
 
 # }
 
-///
+```
 
 Why commented?
 
@@ -421,9 +421,9 @@ Perform for each environment.
 
 ## Step 1 — Login
 
-///
+```
 aws sso login --profile dev-admin
-///
+```
 
 Ensures valid temporary credentials.
 
@@ -431,17 +431,17 @@ Ensures valid temporary credentials.
 
 ## Step 2 — Navigate
 
-///
+```
 cd environments/dev
-///
+```
 
 ---
 
 ## Step 3 — Initialize
 
-///
+```
 terraform init
-///
+```
 
 Downloads provider plugins.
 
@@ -449,9 +449,9 @@ Downloads provider plugins.
 
 ## Step 4 — Apply
 
-///
+```
 terraform apply
-///
+```
 
 Creates:
 
@@ -466,9 +466,9 @@ Uncomment backend.tf.
 
 Then run:
 
-///
+```
 terraform init -reconfigure
-///
+```
 
 Terraform migrates local state to S3.
 
@@ -517,7 +517,260 @@ This repository becomes the root of trust for all infrastructure.
 
 All future Terraform projects will reference these remote state backends.
 
+---
 
+# 10. Detailed AWS Login Setup (IAM Identity Center / SSO)
+
+This section explains exactly how to configure and authenticate using AWS CLI with IAM Identity Center (Single Sign-On) for Dev, Staging, and Prod accounts.
+
+We do NOT use access keys.
+We use temporary credentials via SSO.
+
+---
+
+## 10.1 Verify AWS CLI Installation
+
+Run:
+
+```
+aws --version
+```
+
+You must see aws-cli/2.x.x
+
+Version 2 is required for IAM Identity Center authentication.
+
+---
+
+## 10.2 Clean Previous AWS Configuration (Important)
+
+This ensures no corrupted or legacy credentials exist.
+
+Run:
+
+```
+Remove-Item -Recurse -Force $env:USERPROFILE.aws -ErrorAction SilentlyContinue
+```
+
+This removes:
+
+* Old config files
+* Cached SSO tokens
+* Old access keys
+
+---
+
+## 10.3 Create SSO Session
+
+We create one reusable SSO session.
+
+Run:
+
+```
+aws configure sso-session
+```
+
+When prompted, enter:
+
+SSO session name:
+platform-session
+
+SSO start URL:
+[https://d-906619e6cc.awsapps.com/start](https://d-906619e6cc.awsapps.com/start)
+
+SSO region:
+us-east-1
+
+SSO registration scopes:
+Press Enter (use default)
+
+You should see:
+Completed configuring SSO session: platform-session
+
+---
+
+## 10.4 Login to the SSO Session
+
+Run:
+
+```
+aws sso login --sso-session platform-session
+```
+
+Your browser will open.
+
+Authenticate and click Allow.
+
+This creates a temporary authentication token.
+
+---
+
+# 10.5 Configure DEV Profile
+
+Run:
+
+```
+aws configure sso --profile dev-admin
+```
+
+When prompted:
+
+SSO session name:
+platform-session
+
+Select the Dev AWS account (data-platform-dev).
+
+Select role:
+AdministratorAccess
+
+CLI default region:
+eu-central-1
+
+CLI default output format:
+json
+
+This creates the local CLI profile named dev-admin.
+
+---
+
+## 10.6 Login to DEV Profile
+
+Run:
+
+```
+aws sso login --profile dev-admin
+```
+
+Then verify:
+
+```
+aws sts get-caller-identity --profile dev-admin
+```
+
+STS means Security Token Service.
+
+You should see:
+
+* Account ID (Dev account)
+* ARN containing AdministratorAccess
+
+If this works, DEV login is complete.
+
+---
+
+# 10.7 Configure STAGING Profile
+
+Run:
+
+```
+aws configure sso --profile staging-admin
+```
+
+When prompted:
+
+SSO session name:
+platform-session
+
+Select staging account.
+
+Role:
+AdministratorAccess
+
+Region:
+eu-central-1
+
+Output:
+json
+
+Login:
+
+```
+aws sso login --profile staging-admin
+```
+
+Verify:
+
+```
+aws sts get-caller-identity --profile staging-admin
+```
+
+---
+
+# 10.8 Configure PROD Profile
+
+Run:
+
+```
+aws configure sso --profile prod-admin
+```
+
+When prompted:
+
+SSO session name:
+platform-session
+
+Select prod account.
+
+Role:
+AdministratorAccess
+
+Region:
+eu-central-1
+
+Output:
+json
+
+Login:
+
+```
+aws sso login --profile prod-admin
+```
+
+Verify:
+
+```
+aws sts get-caller-identity --profile prod-admin
+```
+
+---
+
+# 10.9 Important Notes About SSO
+
+* SSO tokens expire (usually after 1 hour).
+* Before running terraform plan or apply, always refresh login:
+
+```
+aws sso login --profile dev-admin
+```
+
+Repeat for staging or prod as needed.
+
+Terraform does NOT automatically refresh SSO tokens.
+
+---
+
+# 10.10 Conceptual Understanding
+
+Profile ≠ Account.
+
+Profile = Local CLI configuration.
+Account = AWS isolation boundary.
+Role = Permission set inside account.
+
+Example:
+
+prod-admin profile → assumes AdministratorAccess role → inside Prod AWS account.
+
+---
+
+You now have:
+
+* One SSO session
+* Three isolated CLI profiles
+* No static access keys
+* Secure temporary authentication
+
+This completes enterprise-grade AWS login configuration for Terraform bootstrap.
 
 
 

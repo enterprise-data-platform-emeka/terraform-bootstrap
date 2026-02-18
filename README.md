@@ -69,7 +69,7 @@ This prevents:
 # 3. Repository Structure
 
 Create the following structure:
-
+```
 terraform-bootstrap/
 │
 ├── versions.tf
@@ -97,6 +97,7 @@ terraform-bootstrap/
 ├── main.tf
 ├── variables.tf
 └── backend.tf
+```
 
 ---
 

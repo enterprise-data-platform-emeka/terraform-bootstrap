@@ -1,0 +1,45 @@
+name: CI
+
+# Runs on every pull request to main.
+# Validates formatting and configuration for all three bootstrap environments.
+# Bootstrap is applied manually (one-time per account) — there is no deploy workflow.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate (${{ matrix.environment }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [dev, staging, prod]
+
+    defaults:
+      run:
+        working-directory: environments/${{ matrix.environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.6"
+
+      - name: terraform fmt check
+        run: terraform fmt -check -recursive
+
+      # -backend=false skips S3 backend initialisation so the job needs no
+      # AWS credentials. We only need to validate configuration syntax here.
+      - name: terraform init (no backend)
+        run: terraform init -backend=false
+
+      - name: terraform validate
+        run: terraform validate

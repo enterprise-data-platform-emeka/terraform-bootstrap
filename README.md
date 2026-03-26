@@ -1,5 +1,9 @@
 # Terraform Bootstrap
 
+This repository is part of the [Enterprise Data Platform](https://github.com/enterprise-data-platform-emeka/platform-docs). For the full project overview, architecture diagram, and build order, start there.
+
+---
+
 This is the first repository I run before anything else in the Enterprise Data Platform. Its only job is to create the remote storage that Terraform uses to track what infrastructure it has already created.
 
 Nothing else in this project can be built until this exists.

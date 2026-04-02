@@ -478,6 +478,8 @@ There is no deploy workflow. Bootstrap is a one-time manual operation per AWS ac
 
 After completing this bootstrap for all three environments, I have:
 
+![DynamoDB lock table enterprise-data-platform-tf-lock-dev active in the dev account](images/aws-dynamo-db.png)
+
 - An S3 state bucket in the dev account
 - A DynamoDB lock table in the dev account
 - An S3 state bucket in the staging account

@@ -7,8 +7,18 @@ name: CI
 on:
   pull_request:
     branches: [main]
+    paths:
+      - 'environments/**'
+      - 'modules/**'
+      - 'versions.tf'
+      - '.github/workflows/**'
   push:
     branches: [main]
+    paths:
+      - 'environments/**'
+      - 'modules/**'
+      - 'versions.tf'
+      - '.github/workflows/**'
 
 jobs:
   validate:

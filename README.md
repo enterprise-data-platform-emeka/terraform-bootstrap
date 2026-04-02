@@ -464,6 +464,16 @@ Terraform does not automatically refresh expired SSO tokens. If the token has ex
 
 ---
 
+## CI
+
+CI only triggers on Terraform source file changes (`environments/**`, `modules/**`, `versions.tf`). README updates never trigger a workflow run.
+
+On every pull request and push to main, `terraform fmt -check` and `terraform validate` run in parallel across all three environments using `-backend=false`. No AWS credentials are needed: the job only checks HCL syntax and provider schema, it does not plan or apply anything.
+
+There is no deploy workflow. Bootstrap is a one-time manual operation per AWS account. Automating it would risk overwriting the state bucket for a running environment. Run it manually following the deployment procedure above.
+
+---
+
 ## End result
 
 After completing this bootstrap for all three environments, I have:

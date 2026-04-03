@@ -4,7 +4,7 @@ This repository is part of the [Enterprise Data Platform](https://github.com/ent
 
 ---
 
-This is the first repository I run before anything else in the Enterprise Data Platform. Its only job is to create the remote storage that Terraform uses to track what infrastructure it has already created.
+This is the first repository I run before anything else in the Enterprise Data Platform. It does two things: creates the remote storage that Terraform uses to track what infrastructure it has already created, and sets up the GitHub Actions IAM (Identity and Access Management) authentication that every CI/CD workflow in the platform needs to talk to AWS.
 
 Nothing else in this project can be built until this exists.
 
@@ -46,15 +46,20 @@ terraform-bootstrap/
 ├── README.md                        This file
 │
 ├── modules/
-│   └── state-backend/
-│       ├── main.tf                  Creates the S3 bucket and DynamoDB table
+│   ├── state-backend/
+│   │   ├── main.tf                  Creates the S3 bucket and DynamoDB table
+│   │   ├── variables.tf             Input variables for the module
+│   │   └── outputs.tf               Exports the bucket and table names
+│   │
+│   └── github-oidc/
+│       ├── main.tf                  Creates the OIDC provider and IAM roles
 │       ├── variables.tf             Input variables for the module
-│       └── outputs.tf               Exports the bucket and table names
+│       └── outputs.tf               Exports the provider ARN and role ARNs
 │
 └── environments/
     ├── dev/
-    │   ├── main.tf                  Calls the module with dev-specific values
-    │   ├── variables.tf             Dev-specific variables (region, profile)
+    │   ├── main.tf                  Calls both modules (state-backend + github-oidc)
+    │   ├── variables.tf             Dev-specific variables (region, profile, github_org)
     │   └── backend.tf               Remote backend config (starts commented out)
     │
     ├── staging/
@@ -228,6 +233,51 @@ These outputs surface the bucket name and table name after deployment. I can ref
 
 ---
 
+## The github-oidc module
+
+This module creates everything GitHub Actions needs to authenticate with AWS without storing any long-lived credentials. It lives in bootstrap (not in `terraform-platform-infra-live`) for one important reason: the GitHub Actions IAM role must exist before the infra deploy workflow can run. If the role lived inside the infra repo, every new session would need a manual local apply to bootstrap authentication first. Keeping it here means it is always present, regardless of what the platform deploy cycle has created or destroyed.
+
+The module creates two types of resources.
+
+**The OIDC (OpenID Connect) provider:**
+
+```hcl
+resource "aws_iam_openid_connect_provider" "github" {
+  url             = "https://token.actions.githubusercontent.com"
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1", "1c58a3a8518e8759bf075b76b750d4f2df264fcd"]
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+```
+
+This is an AWS-side trust record. It tells the AWS account to trust JWT (JSON Web Token) tokens issued by GitHub's OIDC service at `https://token.actions.githubusercontent.com`. When a GitHub Actions workflow requests AWS credentials, GitHub issues a short-lived signed token. AWS verifies the signature against this provider and decides whether to grant the role.
+
+The OIDC provider is account-scoped: one per AWS account. Staging and prod environments do not create a second one. The `prevent_destroy = true` protection means `terraform destroy` cannot remove it.
+
+**The IAM roles (one per environment):**
+
+```hcl
+resource "aws_iam_role" "github_actions" {
+  for_each = toset(["dev", "staging", "prod"])
+  name     = "edp-${each.value}-github-actions-role"
+  ...
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+```
+
+Three roles are created: `edp-dev-github-actions-role`, `edp-staging-github-actions-role`, and `edp-prod-github-actions-role`. The deploy workflows in each platform repository reference the role by name and assume it via OIDC. The trust policy on each role restricts access to workflows running from the specific repositories listed in `github_repos` — no other repo can assume the role.
+
+Each role has `AdministratorAccess`. This is intentional because the Terraform apply workflows need to create, modify, and delete resources across every AWS service. Least-privilege is enforced at the trust layer (OIDC conditions that scope to specific repos and the GitHub org) rather than the permission layer.
+
+All three roles also use `prevent_destroy = true` for the same reason as the OIDC provider: if they are accidentally destroyed, every CI/CD workflow in the platform breaks instantly.
+
+---
+
 ## Environment configuration
 
 Each folder inside `environments/` is a standalone Terraform configuration. Terraform only reads files in the current directory, so I have to navigate into the right environment folder before running any commands.
@@ -263,9 +313,14 @@ module "state_backend" {
   dynamodb_table_name = "enterprise-data-platform-tf-lock-dev"
   environment         = "dev"
 }
+
+module "github_oidc" {
+  source     = "../../modules/github-oidc"
+  github_org = var.github_org
+}
 ```
 
-The `provider` block tells Terraform how to authenticate with AWS. The `module` block calls the reusable state-backend module with dev-specific values.
+The `provider` block tells Terraform how to authenticate with AWS. The `state_backend` module call creates the S3 bucket and DynamoDB lock table. The `github_oidc` module call creates the OIDC provider and all three environment IAM roles. Only the dev environment calls `github_oidc` because the OIDC provider is account-scoped.
 
 ### environments/dev/backend.tf
 
@@ -332,6 +387,10 @@ terraform apply
 Terraform shows a plan of what it will create. I type `yes` to confirm. This creates:
 - The S3 state bucket (`enterprise-data-platform-tfstate-dev`)
 - The DynamoDB lock table (`enterprise-data-platform-tf-lock-dev`)
+- The GitHub OIDC provider for the AWS account
+- Three GitHub Actions IAM roles: `edp-dev-github-actions-role`, `edp-staging-github-actions-role`, `edp-prod-github-actions-role`
+
+For staging and prod environments, only the state bucket and lock table are created. The OIDC provider and IAM roles are account-scoped and already exist from the dev apply.
 
 At this point, state is stored locally in a `terraform.tfstate` file in the environments/dev folder.
 
@@ -486,7 +545,9 @@ After completing this bootstrap for all three environments, I have:
 - A DynamoDB lock table in the staging account
 - An S3 state bucket in the prod account
 - A DynamoDB lock table in the prod account
-- Three SSO profiles configured: dev-admin, staging-admin, prod-admin
+- A GitHub OIDC (OpenID Connect) provider registered in the AWS account
+- Three GitHub Actions IAM roles (one per environment), each with `prevent_destroy = true`
+- Three SSO (Single Sign-On) profiles configured: dev-admin, staging-admin, prod-admin
 - No static access keys anywhere
 
-Every other Terraform project in this platform will use these buckets to store its state. The bootstrap repository is the root of trust for all infrastructure that follows.
+Every other Terraform project in this platform will use these buckets to store its state. Every GitHub Actions workflow will use the OIDC provider and IAM roles to authenticate with AWS. The bootstrap repository is the root of trust for all infrastructure and automation that follows.

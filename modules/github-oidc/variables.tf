@@ -12,6 +12,7 @@ variable "github_repos" {
     "platform-dbt-analytics",
     "platform-orchestration-mwaa-airflow",
     "platform-cdc-simulator",
+    "platform-analytics-agent",
     "platform-teardown",
   ]
 }

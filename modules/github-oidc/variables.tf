@@ -14,6 +14,7 @@ variable "github_repos" {
     "platform-cdc-simulator",
     "platform-analytics-agent",
     "platform-teardown",
+    "platform-session-orchestrator",
   ]
 }
 

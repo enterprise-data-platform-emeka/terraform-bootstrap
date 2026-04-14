@@ -551,3 +551,7 @@ After completing this bootstrap for all three environments, I have:
 - No static access keys anywhere
 
 Every other Terraform project in this platform will use these buckets to store its state. Every GitHub Actions workflow will use the OIDC provider and IAM roles to authenticate with AWS. The bootstrap repository is the root of trust for all infrastructure and automation that follows.
+
+---
+
+**Next:** [terraform-platform-infra-live](https://github.com/enterprise-data-platform-emeka/terraform-platform-infra-live): now that remote state and OIDC are in place, provision all AWS infrastructure for the platform (VPC, S3 data lake, RDS, DMS, Glue, MWAA, Redshift Serverless, and ECS Fargate).

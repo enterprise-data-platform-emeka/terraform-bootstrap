@@ -13,6 +13,7 @@ variable "github_repos" {
     "platform-orchestration-mwaa-airflow",
     "platform-cdc-simulator",
     "platform-analytics-agent",
+    "platform-slack-mcp-gateway",
     "platform-teardown",
     "platform-session-orchestrator",
   ]

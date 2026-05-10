@@ -16,10 +16,7 @@ locals {
   github_sub_conditions = [for repo in var.github_repos : "repo:${var.github_org}/${repo}:*"]
 }
 
-# The OIDC provider is account-scoped: one per AWS account regardless of how
-# many environments run in that account.
-#
-# Thumbprints: SHA-1 fingerprints of GitHub's OIDC TLS certificate chain.
+# GitHub OIDC provider.
 # AWS no longer validates thumbprints for token.actions.githubusercontent.com
 # (it pins the endpoint directly), so these values do not need updating when
 # GitHub rotates certificates.
@@ -34,6 +31,7 @@ resource "aws_iam_openid_connect_provider" "github" {
 }
 
 data "aws_iam_policy_document" "github_actions_assume_role" {
+  # Restricts to workflows running from the listed repositories only.
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRoleWithWebIdentity"]
@@ -43,15 +41,12 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
       identifiers = [aws_iam_openid_connect_provider.github.arn]
     }
 
-    # Restricts to workflows running from the listed repositories only.
-    # The :* suffix covers all branches, tags, and GitHub Environments.
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
       values   = local.github_sub_conditions
     }
 
-    # Ensures the token audience is AWS STS, not a third-party service.
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:aud"

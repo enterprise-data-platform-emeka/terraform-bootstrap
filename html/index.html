@@ -136,30 +136,60 @@
 
     <section class="diagram-card" id="architecture">
       <header>
-        <div class="eyebrow">End-to-end architecture</div>
-        <h2>Where this repo sits in the full platform</h2>
+        <div class="eyebrow">Terraform foundation</div>
+        <h2>The first apply creates the shared state and CI trust layer</h2>
       </header>
       
-      <svg viewBox="0 0 1230 500" role="img" aria-label="End-to-end Enterprise Data Platform architecture">
+      <svg viewBox="0 0 1230 520" role="img" aria-label="Terraform bootstrap foundation architecture">
         <defs>
           <marker id="arrow-dark" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#334155"/></marker>
           <marker id="arrow-accent" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/></marker>
         </defs>
-        <rect x="0" y="0" width="1230" height="500" rx="28" fill="#f8fbff"/>
-        <text x="40" y="44" class="diagram-heading">Complete platform path</text>
-        <text x="40" y="70" class="diagram-subtitle">Source changes become trusted Gold marts, then three stakeholder frontends use the same governed analytics backend.</text>
-        <g><rect class="arch-node" x="55" y="84" width="130" height="68" rx="16"/><text x="120" y="114" text-anchor="middle" class="node-title">PostgreSQL</text><text x="120" y="134" text-anchor="middle" class="node-sub">Source OLTP</text></g><g><rect class="arch-node" x="220" y="84" width="130" height="68" rx="16"/><text x="285" y="114" text-anchor="middle" class="node-title">DMS CDC</text><text x="285" y="134" text-anchor="middle" class="node-sub">Change capture</text></g><g><rect class="arch-node" x="385" y="84" width="130" height="68" rx="16"/><text x="450" y="114" text-anchor="middle" class="node-title">Bronze S3</text><text x="450" y="134" text-anchor="middle" class="node-sub">Raw events</text></g><g><rect class="arch-node" x="550" y="84" width="130" height="68" rx="16"/><text x="615" y="114" text-anchor="middle" class="node-title">Glue PySpark</text><text x="615" y="134" text-anchor="middle" class="node-sub">Clean + reconcile</text></g><g><rect class="arch-node" x="715" y="84" width="130" height="68" rx="16"/><text x="780" y="114" text-anchor="middle" class="node-title">Silver S3</text><text x="780" y="134" text-anchor="middle" class="node-sub">Star schema</text></g><g><rect class="arch-node" x="880" y="84" width="130" height="68" rx="16"/><text x="945" y="114" text-anchor="middle" class="node-title">dbt / Athena</text><text x="945" y="134" text-anchor="middle" class="node-sub">Gold models</text></g><g><rect class="arch-node" x="1045" y="84" width="130" height="68" rx="16"/><text x="1110" y="114" text-anchor="middle" class="node-title">Gold S3</text><text x="1110" y="134" text-anchor="middle" class="node-sub">Business marts</text></g><g><rect class="arch-node" x="545" y="260" width="130" height="68" rx="16"/><text x="610" y="290" text-anchor="middle" class="node-title">FastAPI Agent</text><text x="610" y="310" text-anchor="middle" class="node-sub">SQL + guardrails</text></g><g><rect class="arch-node" x="280" y="390" width="130" height="68" rx="16"/><text x="345" y="420" text-anchor="middle" class="node-title">Streamlit UI</text><text x="345" y="440" text-anchor="middle" class="node-sub">Current UI</text></g><g><rect class="arch-node" x="545" y="390" width="130" height="68" rx="16"/><text x="610" y="420" text-anchor="middle" class="node-title">HTML Dashboard</text><text x="610" y="440" text-anchor="middle" class="node-sub">Custom UI</text></g><g><rect class="arch-node" x="810" y="390" width="130" height="68" rx="16"/><text x="875" y="420" text-anchor="middle" class="node-title">Slack MCP</text><text x="875" y="440" text-anchor="middle" class="node-sub">Chat entry</text></g>
-        <g class="flow-arrow"><path class="hit" d="M185 118 L220 118"/><path class="line" d="M185 118 L220 118"/></g><g class="flow-arrow"><path class="hit" d="M350 118 L385 118"/><path class="line" d="M350 118 L385 118"/></g><g class="flow-arrow"><path class="hit" d="M515 118 L550 118"/><path class="line" d="M515 118 L550 118"/></g><g class="flow-arrow"><path class="hit" d="M680 118 L715 118"/><path class="line" d="M680 118 L715 118"/></g><g class="flow-arrow"><path class="hit" d="M845 118 L880 118"/><path class="line" d="M845 118 L880 118"/></g><g class="flow-arrow"><path class="hit" d="M1010 118 L1045 118"/><path class="line" d="M1010 118 L1045 118"/></g><g class="flow-arrow"><path class="hit" d="M1110 152 L610 260"/><path class="line" d="M1110 152 L610 260"/></g><g class="flow-arrow"><path class="hit" d="M545 328 L345 390"/><path class="line" d="M545 328 L345 390"/></g><g class="flow-arrow"><path class="hit" d="M610 328 L610 390"/><path class="line" d="M610 328 L610 390"/></g><g class="flow-arrow"><path class="hit" d="M675 328 L875 390"/><path class="line" d="M675 328 L875 390"/></g><g class="flow-arrow"><path class="hit" d="M345 390 L545 328"/><path class="line" d="M345 390 L545 328"/></g><g class="flow-arrow"><path class="hit" d="M610 390 L610 328"/><path class="line" d="M610 390 L610 328"/></g><g class="flow-arrow"><path class="hit" d="M875 390 L675 328"/><path class="line" d="M875 390 L675 328"/></g>
-        <rect x="498" y="224" width="228" height="132" rx="24" fill="rgba(37,99,235,0.06)" stroke="#bfdbfe"/>
-        <text x="612" y="242" text-anchor="middle" class="layer-label">Analytics serving layer</text>
-        <rect x="238" y="362" width="780" height="92" rx="24" fill="rgba(15,118,110,0.05)" stroke="#ccfbf1"/>
-        <text x="628" y="478" text-anchor="middle" class="layer-label">Frontends: Streamlit, custom HTML, and Slack all converge on FastAPI</text>
+        <rect x="0" y="0" width="1230" height="520" rx="28" fill="#f8fbff"/>
+        <text x="40" y="44" class="diagram-heading">Bootstrap foundation</text>
+        <text x="40" y="70" class="diagram-subtitle">This repo creates the AWS control resources that later Terraform and GitHub Actions workflows depend on.</text>
+
+        <rect class="arch-node" x="70" y="140" width="170" height="90" rx="20"/>
+        <text x="155" y="174" text-anchor="middle" class="node-title">Operator</text>
+        <text x="155" y="196" text-anchor="middle" class="node-sub">runs bootstrap once</text>
+
+        <rect class="arch-node" x="310" y="140" width="180" height="90" rx="20"/>
+        <text x="400" y="174" text-anchor="middle" class="node-title">Terraform apply</text>
+        <text x="400" y="196" text-anchor="middle" class="node-sub">dev / staging / prod</text>
+
+        <rect x="560" y="84" width="260" height="170" rx="24" fill="rgba(37,99,235,.06)" stroke="#bfdbfe"/>
+        <text x="690" y="114" text-anchor="middle" class="layer-label">Remote state backend</text>
+        <rect class="arch-node" x="595" y="138" width="190" height="52" rx="14"/>
+        <text x="690" y="169" text-anchor="middle" class="node-title">S3 tfstate bucket</text>
+        <rect class="arch-node" x="595" y="202" width="190" height="52" rx="14"/>
+        <text x="690" y="233" text-anchor="middle" class="node-title">DynamoDB lock table</text>
+
+        <rect x="560" y="300" width="260" height="150" rx="24" fill="rgba(15,118,110,.06)" stroke="#ccfbf1"/>
+        <text x="690" y="330" text-anchor="middle" class="layer-label">GitHub deploy trust</text>
+        <rect class="arch-node" x="595" y="354" width="190" height="52" rx="14"/>
+        <text x="690" y="385" text-anchor="middle" class="node-title">OIDC provider</text>
+        <rect class="arch-node" x="595" y="418" width="190" height="52" rx="14"/>
+        <text x="690" y="449" text-anchor="middle" class="node-title">Environment roles</text>
+
+        <rect class="arch-node" x="910" y="140" width="220" height="90" rx="20"/>
+        <text x="1020" y="174" text-anchor="middle" class="node-title">Infrastructure repos</text>
+        <text x="1020" y="196" text-anchor="middle" class="node-sub">use S3 backend + locks</text>
+
+        <rect class="arch-node" x="910" y="340" width="220" height="90" rx="20"/>
+        <text x="1020" y="374" text-anchor="middle" class="node-title">GitHub Actions</text>
+        <text x="1020" y="396" text-anchor="middle" class="node-sub">assume short-lived roles</text>
+
+        <g class="flow-arrow"><path class="hit" d="M240 185 H310"/><path class="line" d="M240 185 H310"/></g>
+        <g class="flow-arrow"><path class="hit" d="M490 164 H595"/><path class="line" d="M490 164 H595"/><text x="538" y="152" text-anchor="middle">creates</text></g>
+        <g class="flow-arrow"><path class="hit" d="M490 206 H526 V380 H595"/><path class="line" d="M490 206 H526 V380 H595"/><text x="522" y="294" text-anchor="middle">trust</text></g>
+        <g class="flow-arrow"><path class="hit" d="M785 164 H910"/><path class="line" d="M785 164 H910"/><text x="848" y="152" text-anchor="middle">remote backend</text></g>
+        <g class="flow-arrow"><path class="hit" d="M785 444 H850 V385 H910"/><path class="line" d="M785 444 H850 V385 H910"/><text x="842" y="432" text-anchor="middle">OIDC roles</text></g>
       </svg>
     
       <div class="explain">
-        <div><strong>Data pipeline</strong><span>PostgreSQL changes are captured by DMS, stored in Bronze, cleaned by Glue, modeled by dbt, and exposed as Gold marts.</span></div>
-        <div><strong>Serving layer</strong><span>The analytics agent queries Gold data through Athena and returns governed answers with SQL, cost, and audit evidence.</span></div>
-        <div><strong>Frontends</strong><span>Streamlit, custom HTML, and Slack/MCP are separate user entry points that share the same backend contract.</span></div>
+        <div><strong>State first</strong><span>The S3 bucket stores Terraform state, and DynamoDB prevents concurrent applies from corrupting it.</span></div>
+        <div><strong>CI trust</strong><span>GitHub Actions receives short-lived AWS credentials through OIDC instead of long-lived access keys.</span></div>
+        <div><strong>Downstream dependency</strong><span>Every later Terraform repo assumes this foundation already exists before it can deploy safely.</span></div>
       </div>
     </section>
 
@@ -212,7 +242,7 @@
     </section>
 
     <section id="concepts">
-      <div class="eyebrow">Beginner-friendly concept map</div>
+      <div class="eyebrow">Core concept map</div>
       <h2>Key ideas to understand</h2>
       <div class="concept-grid">
           <article class="concept-card">

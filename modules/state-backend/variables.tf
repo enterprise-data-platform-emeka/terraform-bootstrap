@@ -1,3 +1,8 @@
+# -----------------------------------------------------------------------------
+# Terraform state backend input variables
+# -----------------------------------------------------------------------------
+# Receives the state bucket, lock table, and environment names.
+
 variable "bucket_name" {
   description = "Name of the S3 bucket used for Terraform remote state"
   type        = string

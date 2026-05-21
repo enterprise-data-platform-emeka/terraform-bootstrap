@@ -1,3 +1,8 @@
+# -----------------------------------------------------------------------------
+# Staging bootstrap input variables
+# -----------------------------------------------------------------------------
+# Defines the AWS profile, region, and GitHub organisation used by bootstrap.
+
 variable "aws_region" {
   type    = string
   default = "eu-central-1"

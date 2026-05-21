@@ -1,3 +1,8 @@
+# -----------------------------------------------------------------------------
+# GitHub OIDC input variables
+# -----------------------------------------------------------------------------
+# Receives organisation and repository allow-list values for GitHub Actions trust.
+
 variable "github_org" {
   description = "GitHub organisation or username that owns the platform repositories (e.g. enterprise-data-platform-emeka)"
   type        = string

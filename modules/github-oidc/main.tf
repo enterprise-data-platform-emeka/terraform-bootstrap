@@ -1,5 +1,6 @@
-# GitHub Actions OIDC
-#
+# -----------------------------------------------------------------------------
+# GitHub Actions OIDC module
+# -----------------------------------------------------------------------------
 # Creates the account-scoped OIDC trust provider and one IAM role per
 # environment (dev, staging, prod). All resources use prevent_destroy so
 # they survive test-and-destroy cycles on the platform infrastructure.
@@ -16,6 +17,10 @@ locals {
   github_sub_conditions = [for repo in var.github_repos : "repo:${var.github_org}/${repo}:*"]
 }
 
+# -----------------------------------------------------------------------------
+# 1. GitHub OIDC provider
+# -----------------------------------------------------------------------------
+
 # GitHub OIDC provider.
 # AWS no longer validates thumbprints for token.actions.githubusercontent.com
 # (it pins the endpoint directly), so these values do not need updating when
@@ -29,6 +34,10 @@ resource "aws_iam_openid_connect_provider" "github" {
     prevent_destroy = true
   }
 }
+
+# -----------------------------------------------------------------------------
+# 2. GitHub Actions role trust policy
+# -----------------------------------------------------------------------------
 
 data "aws_iam_policy_document" "github_actions_assume_role" {
   # Restricts to workflows running from the listed repositories only.
@@ -54,6 +63,10 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
     }
   }
 }
+
+# -----------------------------------------------------------------------------
+# 3. Environment roles and permissions
+# -----------------------------------------------------------------------------
 
 # One role per environment. The deploy workflows in each repo reference
 # edp-{env}-github-actions-role by name, so the naming must match exactly.
